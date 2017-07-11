@@ -31,9 +31,9 @@ class List extends Component {
   removeItem(event){
     var data = {id: this.state.id}
     axios.post("/producao/delete/", data)
-      .then(function(result){
-        console.log(result)
-      })
+      .then((result) =>
+        this.props.onDelete([], "delete")
+      )
       .catch(function (e){
         console.error(e);
       })
@@ -44,7 +44,7 @@ class List extends Component {
     return (
       <MuiThemeProvider>
         <div>
-          { this.props.results ? this.props.results.map((i) =>
+          { this.props.displayType === "list" ? this.props.results.map((i) =>
             <div key={i.id}>
               <div className="filtered">
                 <div className="alert alert-info" role="alert">
@@ -67,22 +67,40 @@ class List extends Component {
                   </div>
                 </div>
               </div>
-            </div>) : <p></p>}
+            </div>) : ( this.props.displayType === "empty" ?
+              <div className="filtered">
+                <div className="alert alert-danger" role="alert">
+                  Nenhum produto encontrado.
+                </div>
+              </div> :
+            ( this.props.displayType === "delete" ?
+              <div className="filtered">
+                <div className="alert alert-success" role="alert">
+                  Produto removido com sucesso.
+                </div>
+              </div>:
+            ( this.props.displayType === "added" ?
+            <div className="filtered">
+              <div className="alert alert-success" role="alert">
+                Produto adicionado com sucesso.
+              </div>
+            </div>:
+              <p></p>)))}
             <div>
               <Modal show={this.state.showModal} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>
                   <Modal.Title>Confirmar Remoção</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                  Deseja deletar o produto abaixo?<br/><br/>
+                  Deseja remover o produto abaixo?<br/><br/>
                   Produto: {this.state.produto}<br/>
                   Quantidade: {this.state.quantidade}<br/>
                   Data: {this.state.data}
 
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button onClick={event => this.close(event)}>Não</Button>
-                  <Button onClick={event => this.removeItem(event)}>Sim</Button>
+                  <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
+                  <Button className="btn-primary" onClick={event => this.removeItem(event)}>Sim</Button>
                 </Modal.Footer>
               </Modal>
             </div>
@@ -94,12 +112,21 @@ class List extends Component {
 
 function mapStateToProps (state) {
   return {
-    results: state
+    results: state.data,
+    displayType: state.displayType
+  }
+}
+
+function mapDispatchToProps (dispatch) {
+  return {
+    onDelete: function (data, displayType) {
+      dispatch(updateFiltered(data, displayType))
+    }
   }
 }
 
 List = connect(
-  mapStateToProps
+  mapStateToProps, mapDispatchToProps
 )(List)
 
 export default List;
