@@ -34,15 +34,15 @@ class List extends Component {
   }
 
   close(event) {
-    this.setState({showModal: false});
+    this.setState({showModal: false, estoque_new:""});
   }
 
   updateItem(event){
     if (this.state.estoque_new !== ""){
-      var data = {id: this.state.id, estoque: this.state.estoque}
+      var data = {id: this.state.id, estoque: this.state.estoque_new}
       axios.post("/estoque/update/", data)
         .then((result) =>
-          this.props.onUpdate([], "update")
+          this.props.onUpdate([], result)
         )
         .catch(function (e){
           console.error(e);
@@ -64,11 +64,11 @@ class List extends Component {
                       <p><strong>Ingrediente:</strong></p>
                       <p>{ i.ingrediente }</p>
                     </div>
-                    <div className="listing">
+                    <div className="listing_half">
                       <p><strong>Estoque:</strong></p>
                       <p className="align_center">{ i.estoque } { i.unidade }</p>
                     </div>
-                    <div className="listing_half">
+                    <div className="listing">
                       <p><strong>Última compra:</strong></p>
                       <p>{ i.data_output }</p>
                     </div>
@@ -110,8 +110,8 @@ class List extends Component {
                 </Modal.Header>
                 <Modal.Body>
                   Deseja atualizar o estoque do ingrediente abaixo?<br/><br/>
-                  Ingrediente: {this.state.ingrediente}<br/><br/>
-                  Estoque: <TextField id="estoque_new" floatingLabelText="Estoque" value={this.state.estoque_new} onChange={event => this.update_state(event)}/> {this.state.unidade}<br/>
+                  Ingrediente: {this.state.ingrediente}<br/>
+                  <TextField id="estoque_new" floatingLabelText="Estoque" value={this.state.estoque_new} onChange={event => this.update_state(event)}/> {this.state.unidade}<br/>
 
 
                 </Modal.Body>
