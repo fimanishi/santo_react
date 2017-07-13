@@ -22,8 +22,8 @@ class List extends Component {
   }
 
   update_state(event){
-    var re = /^[\d]+(,[\d]*)?/g;
-    var check = re.exec(event.target.value);
+    var re = /^([\d]+|$)(,[\d]{0,3})?$/g;
+    var check = re.test(event.target.value);
     if (check){
       this.setState({estoque_new: event.target.value});
     }
@@ -42,7 +42,7 @@ class List extends Component {
       var data = {id: this.state.id, estoque: this.state.estoque_new}
       axios.post("/estoque/update/", data)
         .then((result) =>
-          this.props.onUpdate([], result)
+          this.props.onUpdate([], result.data)
         )
         .catch(function (e){
           console.error(e);
@@ -64,12 +64,12 @@ class List extends Component {
                       <p><strong>Ingrediente:</strong></p>
                       <p>{ i.ingrediente }</p>
                     </div>
-                    <div className="listing_half">
+                    <div className="listing">
                       <p><strong>Estoque:</strong></p>
                       <p className="align_center">{ i.estoque } { i.unidade }</p>
                     </div>
-                    <div className="listing">
-                      <p><strong>Última compra:</strong></p>
+                    <div className="listing_half">
+                      <p><strong>Data:</strong></p>
                       <p>{ i.data_output }</p>
                     </div>
                     <div className="listing_half">
@@ -102,11 +102,17 @@ class List extends Component {
                 Selecione tipo, ingrediente, quantidade e valor.
               </div>
             </div> :
-              <p></p>))))}
+            ( this.props.displayType === "fail" ?
+            <div className="filtered">
+              <div className="alert alert-danger" role="alert">
+                Insira quantidade e valor corretamente, usando apenas números e vírgula.
+              </div>
+            </div> :
+              <p></p>)))))}
             <div>
               <Modal show={this.state.showModal} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>
-                  <Modal.Title>Confirmar Remoção</Modal.Title>
+                  <Modal.Title>Atualizar Estoque</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                   Deseja atualizar o estoque do ingrediente abaixo?<br/><br/>
@@ -136,7 +142,7 @@ function mapStateToProps (state) {
 
 function mapDispatchToProps (dispatch) {
   return {
-    onDelete: function (data, displayType) {
+    onUpdate: function (data, displayType) {
       dispatch(updateFiltered(data, displayType))
     }
   }
