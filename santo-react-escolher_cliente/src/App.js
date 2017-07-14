@@ -9,7 +9,6 @@ import { Modal } from 'react-bootstrap';
 import "./Modal.css";
 import axios from 'axios';
 import TextField from 'material-ui/TextField';
-import RadioButton from 'material-ui/RadioButton';
 
 const iconStyles = {
   marginLeft: 20,
@@ -19,37 +18,41 @@ const iconStyles = {
 class List extends Component {
   constructor (props){
     super(props);
-    this.state = {showModal: false, nome: "", id: 0, telefone: "", tipo: "", endereco: "", bairro: "", cidade: "", referencia: "", credito: 0};
+    this.state = {showModalClient: false, showModal: false, nome: "", id: 0, telefone: "", tipo: "", endereco: "", bairro: "", cidade: "", referencia: "", credito: 0};
   }
 
-  // update_state(event){
-  //   var re = /^([\d]+|$)(,[\d]{0,3})?$/g;
-  //   var check = re.test(event.target.value);
-  //   if (check){
-  //     this.setState({estoque_new: event.target.value});
-  //   }
-  // }
+  updateState (event){
+    this.setState({[event.target.id]: event.target.value});
+  }
 
-  handle_click (event, id, nome, telefone, tipo, endereco, bairro, cidade, referencia, credito) {
+  handleClick (event, id, nome, telefone, tipo, endereco, bairro, cidade, referencia, credito) {
     this.setState({showModal: true, id: id, nome: nome, telefone: telefone, tipo: tipo, endereco: endereco, bairro: bairro, cidade: cidade, referencia: referencia, credito: credito});
   }
 
   close(event) {
-    this.setState({showModal: false, estoque_new:""});
+    this.setState({showModal: false, showModalClient: false});
   }
 
   updateItem(event){
-    if (this.state.estoque_new !== ""){
-      var data = {id: this.state.id, estoque: this.state.estoque_new}
-      axios.post("/estoque/update/", data)
-        .then((result) =>
-          this.props.onUpdate([], result.data)
-        )
-        .catch(function (e){
-          console.error(e);
-        })
-      this.close(event);
-    }
+    var data = {id: this.state.id, nome: this.state.nome, telefone: this.state.telefone, endereco: this.state.endereco, bairro: this.state.bairro, cidade: this.state.cidade}
+    axios.post("/cliente/update/", data)
+      .then((result) =>
+        this.props.onUpdate([], result.data)
+      )
+      .catch(function (e){
+        console.error(e);
+      })
+    this.close(event);
+  }
+
+  checkClick(event, id, nome){
+    this.setState({showModalClient: true, id: id, nome: nome});
+    sessionStorage.setItem("client_id", id);
+  }
+
+  selectItem(event){
+    this.close(event);
+    window.location.href("/novo_pedido/");
   }
 
   render() {
@@ -70,10 +73,10 @@ class List extends Component {
                       <p className="align_center">{ i.telefone }</p>
                     </div>
                     <div className="listing_half">
-                      <RadioButton name="select_client" onClick={event => this.radio_click(event, i.id)}
+                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.checkClick(event, i.id, i.nome)}>check_circle</FontIcon>
                     </div>
                     <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handle_click(event, i.id, i.ingrediente, i.estoque, i.unidade)} >update</FontIcon>
+                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.id, i.nome, i.telefone, i.tipo, i.endereco, i.bairro, i.cidade, i.referencia, i.credito)} >update</FontIcon>
                     </div>
                   </div>
                 </div>
@@ -81,49 +84,65 @@ class List extends Component {
             </div>) : ( this.props.displayType === "empty" ?
               <div className="filtered">
                 <div className="alert alert-danger" role="alert">
-                  Nenhum ingrediente encontrado.
+                  Nenhum cliente encontrado.
                 </div>
               </div> :
             ( this.props.displayType === "update" ?
               <div className="filtered">
                 <div className="alert alert-success" role="alert">
-                  Estoque atualizado com sucesso.
+                  Cliente atualizado com sucesso.
                 </div>
               </div>:
             ( this.props.displayType === "added" ?
             <div className="filtered">
               <div className="alert alert-success" role="alert">
-                Estoque atualizado com sucesso.
+                Cliente adicionado com sucesso.
               </div>
             </div>:
             ( this.props.displayType === "add" ?
             <div className="filtered">
               <div className="alert alert-danger" role="alert">
-                Selecione tipo, ingrediente, quantidade e valor.
+                Insira nome ou telefone.
               </div>
             </div> :
             ( this.props.displayType === "fail" ?
             <div className="filtered">
               <div className="alert alert-danger" role="alert">
-                Insira quantidade e valor corretamente, usando apenas números e vírgula.
+                Insira o telefone corretamente (XX)XXXX-XXXX ou (XX)XXXXX-XXXX.
               </div>
             </div> :
               <p></p>)))))}
             <div>
               <Modal show={this.state.showModal} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>
-                  <Modal.Title>Atualizar Estoque</Modal.Title>
+                  <Modal.Title>Atualizar Cliente</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                  Deseja atualizar o estoque do ingrediente abaixo?<br/><br/>
-                  Ingrediente: {this.state.ingrediente}<br/>
-                  <TextField id="estoque_new" floatingLabelText="Estoque" value={this.state.estoque_new} onChange={event => this.update_state(event)}/> {this.state.unidade}<br/>
-
-
+                  Deseja atualizar as informações do cliente abaixo?<br/><br/>
+                  <TextField id="nome" floatingLabelText="Nome" value={this.state.nome} onChange={event => this.updateState(event)}/>
+                  <TextField id="telefone" floatingLabelText="Telefone" value={this.state.telefone} onChange={event => this.updateState(event)}/>
+                  <TextField id="endereco" floatingLabelText="Endereço" value={this.state.endereco} onChange={event => this.updateState(event)}/>
+                  <TextField id="bairro" floatingLabelText="Bairro" value={this.state.bairro} onChange={event => this.updateState(event)}/>
+                  <TextField id="cidade" floatingLabelText="Cidade" value={this.state.cidade} onChange={event => this.updateState(event)}/>
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
                   <Button className="btn-primary" onClick={event => this.updateItem(event)}>Sim</Button>
+                </Modal.Footer>
+              </Modal>
+            </div>
+            <div>
+              <Modal show={this.state.showModalClient} onHide={event => this.close(event)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Confirmar Cliente</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  Deseja selecionar o cliente abaixo?<br/><br/>
+                  Nome: {this.state.nome}
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
+                  <Button className="btn-primary" onClick={event => this.selectItem(event)}>Sim</Button>
                 </Modal.Footer>
               </Modal>
             </div>
