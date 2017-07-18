@@ -81,10 +81,3 @@
 .material-icons:hover {
   cursor: pointer;
 }
-
-.my_menu2 {
-    width: 300px;
-    margin: 0 auto 10px auto;
-    display: flex;
-    justify-content: space-between;
-}
