@@ -19,7 +19,7 @@ const iconStyles = {
 class List extends Component {
   constructor (props){
     super(props);
-    this.state = {showModalClient: false, showModal: false, nome: "", id: 0, telefone: "", tipo: "", endereco: "", bairro: "", cidade: "", razao_social: "", cnpj: "", whatsapp: "", contato: ""};
+    this.state = {showModalClient: false, showModal: false, nome: "", id: 0, telefone: "", tipo: "", endereco: "", estado: "", cidade: "", razao_social: "", cnpj: "", whatsapp: "", contato: ""};
   }
 
   updateState (event){
@@ -46,8 +46,8 @@ class List extends Component {
     }
   }
 
-  handleClick (event, id, razao_social, nome, telefone, tipo, endereco, bairro, cidade, cnpj, whatsapp, contato) {
-    this.setState({showModal: true, id: id, razao_social: razao_social, nome: nome, telefone: telefone, tipo: tipo, endereco: endereco, bairro: bairro, cidade: cidade, cnpj: cnpj, whatsapp: whatsapp, contato: contato});
+  handleClick (event, id, razao_social, nome, telefone, tipo, endereco, estado, cidade, cnpj, whatsapp, contato) {
+    this.setState({showModal: true, id: id, razao_social: razao_social, nome: nome, telefone: telefone, tipo: tipo, endereco: endereco, estado: estado, cidade: cidade, cnpj: cnpj, whatsapp: whatsapp, contato: contato});
   }
 
   close(event) {
@@ -56,13 +56,13 @@ class List extends Component {
 
   updateItem(event){
     if (this.state.telefone.length === 0 || this.state.telefone.length === 13 || this.state.telefone.length === 14){
-      var data = {id: this.state.id, nome: this.state.nome, telefone: this.state.telefone, endereco: this.state.endereco, bairro: this.state.bairro, cidade: this.state.cidade, contato: this.state.contato}
-      axios.post("/cliente/update/", data)
+      var data = {id: this.state.id, nome: this.state.nome, telefone: this.state.telefone, endereco: this.state.endereco, estado: this.state.estado, cidade: this.state.cidade, contato: this.state.contato}
+      axios.post("/fornecedor/update/", data)
         .then((result) =>{
           sessionStorage.setItem("fornecedor_id", this.state.id);
           sessionStorage.setItem("fornecedor_name", this.state.nome);
           this.close(event);
-          window.location.href = "/estoque/";
+          window.location.href = "/nova_compra/";
         })
         .catch(function (e){
           this.props.onUpdate([], "fail")
@@ -76,13 +76,13 @@ class List extends Component {
 
   checkClick(event, id, nome){
     this.setState({showModalClient: true, id: id, nome: nome});
-    sessionStorage.setItem("forncedor_id", id);
+    sessionStorage.setItem("fornecedor_id", id);
     sessionStorage.setItem("fornecedor_name", nome)
   }
 
   selectItem(event){
     this.close(event);
-    window.location.href = "/estoque/";
+    window.location.href = "/nova_compra/";
   }
 
   addCliente(event){
@@ -103,14 +103,14 @@ class List extends Component {
                       <p>{ i.nome }</p>
                     </div>
                     <div className="listing">
-                      <p><strong>Contato:</strong></p>
+                      <p className="align_center"><strong>Contato:</strong></p>
                       <p className="align_center">{ i.contato }</p>
                     </div>
                     <div className="listing_half">
                       <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.checkClick(event, i.id, i.nome)}>check_circle</FontIcon>
                     </div>
                     <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.id, i.razao_social, i.nome, i.telefone, i.tipo, i.endereco, i.bairro, i.cidade, i.cnpj, i.whatsapp, i.contato)} >update</FontIcon>
+                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.id, i.razao_social, i.nome, i.telefone, i.tipo, i.endereco, i.estado, i.cidade, i.cnpj, i.whatsapp, i.contato)} >update</FontIcon>
                     </div>
                   </div>
                 </div>
@@ -150,8 +150,8 @@ class List extends Component {
                   <TextField id="nome" floatingLabelText="Nome" value={this.state.nome} onChange={event => this.updateState(event)}/>
                   <TextField id="telefone" floatingLabelText="Telefone" value={this.state.telefone} onChange={event => this.updateState(event)}/>
                   <TextField id="endereco" floatingLabelText="Endereço" value={this.state.endereco} onChange={event => this.updateState(event)}/>
-                  <TextField id="bairro" floatingLabelText="Bairro" value={this.state.bairro} onChange={event => this.updateState(event)}/>
                   <TextField id="cidade" floatingLabelText="Cidade" value={this.state.cidade} onChange={event => this.updateState(event)}/>
+                  <TextField id="estado" floatingLabelText="Estado" value={this.state.estado} onChange={event => this.updateState(event)}/>
                   <TextField id="contato" floatingLabelText="Contato" value={this.state.contato} onChange={event => this.updateState(event)}/>
                 </Modal.Body>
                 <Modal.Footer>
