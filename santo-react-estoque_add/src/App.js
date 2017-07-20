@@ -17,21 +17,21 @@ const iconStyles = {
 
 const widthButton = {
   width: 300,
-};
+}
 
 
 class List extends Component {
   constructor (props){
     super(props);
-    this.state = {showModal: false, showModalUpdate: false, showModalFinish: false, produto: "", quantidade: 0};
+    this.state = {showModal: false, showModalUpdate: false, showModalFinish: false, ingrediente: "", quantidade: 0, valor: 0};
   }
 
-  handleClick (event, produto, quantidade) {
-    this.setState({showModal: true, produto: produto, quantidade: quantidade});
+  handleClick (event, ingrediente, quantidade, valor) {
+    this.setState({showModal: true, ingrediente: ingrediente, quantidade: quantidade, valor: valor});
   }
 
-  updateClick (event, produto, quantidade) {
-    this.setState({showModalUpdate: true, produto: produto, quantidade: quantidade});
+  updateClick (event, ingrediente, quantidade, valor) {
+    this.setState({showModalUpdate: true, ingrediente: ingrediente, quantidade: quantidade, valor: valor});
   }
 
   finishClick (event) {
@@ -43,10 +43,10 @@ class List extends Component {
   }
 
   removeItem(event){
-    var data = {quantidade: this.state.quantidade, produto: this.state.produto}
-    axios.post("/novo_pedido/delete/", data)
+    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente}
+    axios.post("/estoque/add/delete/", data)
       .then((result) =>{
-        this.props.onDelete(result.data.cart, "delete");
+        this.props.onDelete(result.data, "delete");
       })
       .catch(function (e){
         console.error(e);
@@ -61,11 +61,18 @@ class List extends Component {
     }
   }
 
+  updateValor(event){
+    var re = /^[\d]*(,[\d]{0,3})?$/;
+    if (re.test(event.target.value)){
+      this.setState({valor: event.target.value});
+    }
+  }
+
   updateItem(event){
-    var data = {quantidade: this.state.quantidade, produto: this.state.produto}
-    axios.post("/novo_pedido/update/", data)
+    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente, valor: this.state.valor}
+    axios.post("/estoque/add/update/", data)
       .then((result) =>{
-        this.props.onDelete(result.data.cart, "update");
+        this.props.onDelete(result.data, "update");
       })
       .catch(function (e){
         console.error(e);
@@ -73,6 +80,17 @@ class List extends Component {
     this.close(event);
   }
 
+  finishCompra(event){
+    var data = {confirm: "true"}
+    axios.post("/estoque/add/finish/", data)
+      .then((result) =>{
+        this.close(event)
+        window.location.href = "/estoque_selection/"
+      })
+      .catch(function (e){
+        console.error(e);
+      })
+  }
 
   render() {
     return (
@@ -81,25 +99,25 @@ class List extends Component {
           { this.props.displayType === "fail" ?
           <div className="filtered">
             <div className="alert alert-danger" role="alert">
-              Produto não pode ser adicionado.
+              Ingrediente não pode ser adicionado.
             </div>
           </div>:
           ( this.props.displayType === "delete" ?
             <div className="filtered">
               <div className="alert alert-success" role="alert">
-                Produto removido com sucesso.
+                Ingrediente removido com sucesso.
               </div>
             </div>:
           ( this.props.displayType === "add" ?
           <div className="filtered">
             <div className="alert alert-danger" role="alert">
-              Selecione tipo, produto e quantidade
+              Selecione tipo, ingrediente, quantidade e valor.
             </div>
           </div> :
           ( this.props.displayType === "update" ?
             <div className="filtered">
               <div className="alert alert-success" role="alert">
-                Produto atualizado com sucesso.
+                Ingrediente atualizado com sucesso.
               </div>
             </div>:
           <p></p>)))}
@@ -109,25 +127,31 @@ class List extends Component {
                 <div className="alert alert-info" role="alert">
                   <div className="add_flex">
                     <div className="listing">
-                      <p><strong>Produto:</strong></p>
-                      <p>{ i.produto }</p>
+                      <p><strong>Ingrediente:</strong></p>
+                      <p>{ i.ingrediente }</p>
                     </div>
-                    <div className="listing">
-                      <p><strong>Quantidade:</strong></p>
+                    <div className="listing_half">
+                      <p className="align_center"><strong>Qtd:</strong></p>
                       <p className="align_center">{ i.quantidade }</p>
                     </div>
                     <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.updateClick(event, i.produto, i.quantidade)} >update</FontIcon>
+                      <p className="align_center"><strong>Valor:</strong></p>
+                      <p className="align_center">{ i.valor }</p>
                     </div>
                     <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.produto, i.quantidade)} >delete</FontIcon>
+                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.updateClick(event, i.ingrediente, i.quantidade, i.valor)} >update</FontIcon>
+                    </div>
+                    <div className="listing_half">
+                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.ingrediente, i.quantidade, i.valor)} >delete</FontIcon>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>):<p></p>}
+            </div>):
+              <p></p>}
+            <br/>
             <div className="align_center">
-              <Button className="btn-primary" style={widthButton} onClick={event => this.finishClick(event)}>Finalizar Pedido</Button>
+              <Button className="btn-primary" style={widthButton} onClick={event => this.finishClick(event)}>Finalizar Compra</Button>
             </div>
             <div>
               <Modal show={this.state.showModal} onHide={event => this.close(event)}>
@@ -135,10 +159,10 @@ class List extends Component {
                   <Modal.Title>Confirmar Remoção</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                  Deseja remover o produto abaixo?<br/><br/>
-                  Produto: {this.state.produto}<br/>
+                  Deseja remover o ingrediente abaixo?<br/><br/>
+                  Ingrediente: {this.state.ingrediente}<br/>
                   Quantidade: {this.state.quantidade}<br/>
-
+                  Valor: {this.state.valor}
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
@@ -149,12 +173,13 @@ class List extends Component {
             <div>
               <Modal show={this.state.showModalUpdate} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>
-                  <Modal.Title>Atualizar Cliente</Modal.Title>
+                  <Modal.Title>Atualizar Ingrediente</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                  Deseja alterar a quantidade do produto abaixo?<br/><br/>
-                  Produto: {this.state.produto}<br/>
+                  Deseja alterar os dados do ingrediente abaixo?<br/><br/>
+                  Ingrediente: {this.state.ingrediente}<br/>
                   <TextField id="quantidade" floatingLabelText="Quantidade" value={this.state.quantidade} onChange={event => this.updateQuantidade(event)}/>
+                  <TextField id="valor" floatingLabelText="Valor" value={this.state.valor} onChange={event => this.updateValor(event)}/>
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
@@ -165,14 +190,14 @@ class List extends Component {
             <div>
               <Modal show={this.state.showModalFinish} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>
-                  <Modal.Title>Finalizar Pedido</Modal.Title>
+                  <Modal.Title>Finalizar Compra</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                  Deseja finalizar o pedido?
+                  Deseja finalizar a compra?
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
-                  <Button className="btn-primary" onClick={event => window.location.href = "/finalizar_pedido/"}>Sim</Button>
+                  <Button className="btn-primary" onClick={event => this.finishCompra(event)}>Sim</Button>
                 </Modal.Footer>
               </Modal>
             </div>
