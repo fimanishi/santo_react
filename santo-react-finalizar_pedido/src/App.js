@@ -11,8 +11,13 @@ import axios from 'axios';
 import TextField from 'material-ui/TextField';
 
 const iconStyles = {
+  marginTop: 10,
   marginLeft: 20,
-  marginTop: 20
+};
+
+const iconStyles2 = {
+  marginLeft: 20,
+  marginBottom: 10,
 };
 
 const widthButton = {
@@ -108,19 +113,37 @@ class List extends Component {
               <div className="filtered">
                 <div className="alert alert-info" role="alert">
                   <div className="add_flex">
-                    <div className="listing">
-                      <p><strong>Produto:</strong></p>
-                      <p>{ i.produto }</p>
-                    </div>
-                    <div className="listing">
-                      <p><strong>Quantidade:</strong></p>
-                      <p className="align_center">{ i.quantidade }</p>
+                    <div className="add_block">
+                      <div className="listing_double">
+                        <div className="listing">
+                          <p><strong>Produto:</strong></p>
+                          <p>{ i.produto }</p>
+                        </div>
+                        <div className="listing">
+                          <p><strong>Quantidade:</strong></p>
+                          <p className="align_center">{ i.quantidade }</p>
+                        </div>
+                      </div>
+                      <div className="listing_double">
+                        <div className="listing">
+                          <p><strong>Valor:</strong></p>
+                          <p>R${ i.valor }</p>
+                        </div>
+                        <div className="listing">
+                          <p><strong>Total:</strong></p>
+                          <p className="align_center">R${ i.total }</p>
+                        </div>
+                      </div>
                     </div>
                     <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.updateClick(event, i.produto, i.quantidade)} >update</FontIcon>
-                    </div>
-                    <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.produto, i.quantidade)} >delete</FontIcon>
+                      <div>
+                        <div className="inline">
+                          <FontIcon className="material-icons" color="#31708f" style={iconStyles2} onClick={event => this.updateClick(event, i.produto, i.quantidade)} >update</FontIcon>
+                        </div>
+                        <div className="inline">
+                          <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.produto, i.quantidade)} >delete</FontIcon>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
