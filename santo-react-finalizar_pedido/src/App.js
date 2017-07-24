@@ -79,6 +79,23 @@ class List extends Component {
     this.close(event);
   }
 
+  finishPedido(event){
+    var data = {};
+    axios.post("/finalizar_pedido/finish/", data)
+      .then((result) =>{
+        if (result.data === "success"){
+          window.location.href = "/novo_pedido/";
+        }
+        else {
+          this.close(event);
+          this.props.onDelete([], "failure");
+        }
+      })
+      .catch((e) => {
+          console.error(e);
+      })
+  }
+
 
   render() {
     return (
@@ -108,7 +125,13 @@ class List extends Component {
                 Produto atualizado com sucesso.
               </div>
             </div>:
-          <p></p>)))}
+          ( this.props.displayType === "failure" ?
+            <div className="filtered">
+              <div className="alert alert-danger" role="alert">
+                Não há produto adicionado ao pedido.
+              </div>
+            </div>:
+          <p></p>))))}
           { this.props.results.length >= 0 ? this.props.results.map((i) =>
             <div key={i.id}>
               <div className="filtered">
@@ -196,7 +219,7 @@ class List extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
-                  <Button className="btn-primary" onClick={event => window.location.href = "/finalizar_pedido/"}>Sim</Button>
+                  <Button className="btn-primary" onClick={event => this.finishPedido(event)}>Sim</Button>
                 </Modal.Footer>
               </Modal>
             </div>
