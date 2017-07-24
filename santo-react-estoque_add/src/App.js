@@ -23,15 +23,15 @@ const widthButton = {
 class List extends Component {
   constructor (props){
     super(props);
-    this.state = {showModal: false, showModalUpdate: false, showModalFinish: false, ingrediente: "", quantidade: 0, valor: 0};
+    this.state = {showModal: false, showModalUpdate: false, showModalFinish: false, ingrediente: "", quantidade: 0, valor: 0, unidade: 0};
   }
 
-  handleClick (event, ingrediente, quantidade, valor) {
-    this.setState({showModal: true, ingrediente: ingrediente, quantidade: quantidade, valor: valor});
+  handleClick (event, ingrediente, quantidade, valor, unidade) {
+    this.setState({showModal: true, ingrediente: ingrediente, quantidade: quantidade, valor: valor, unidade: unidade});
   }
 
-  updateClick (event, ingrediente, quantidade, valor) {
-    this.setState({showModalUpdate: true, ingrediente: ingrediente, quantidade: quantidade, valor: valor});
+  updateClick (event, ingrediente, quantidade, valor, unidade) {
+    this.setState({showModalUpdate: true, ingrediente: ingrediente, quantidade: quantidade, valor: valor, unidade: unidade});
   }
 
   finishClick (event) {
@@ -43,10 +43,11 @@ class List extends Component {
   }
 
   removeItem(event){
-    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente}
+    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente, unidade: this.state.unidade}
     axios.post("/estoque/add/delete/", data)
       .then((result) =>{
-        this.props.onDelete(result.data, "delete");
+        this.props.onDelete(result.data.cart, "delete");
+        document.getElementById("subtotal").innerHTML = result.data.valor;
       })
       .catch(function (e){
         console.error(e);
@@ -57,22 +58,23 @@ class List extends Component {
   updateQuantidade(event){
     var re = /^[\d]*(,[\d]{0,3})?$/;
     if (re.test(event.target.value)){
-      this.setState({quantidade: event.target.value});
+      this.setState({[event.target.id]: event.target.value});
     }
   }
 
   updateValor(event){
-    var re = /^[\d]*(,[\d]{0,3})?$/;
+    var re = /^[\d]*(,[\d]{0,2})?$/;
     if (re.test(event.target.value)){
       this.setState({valor: event.target.value});
     }
   }
 
   updateItem(event){
-    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente, valor: this.state.valor}
+    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente, valor: this.state.valor, unidade: this.state.unidade}
     axios.post("/estoque/add/update/", data)
       .then((result) =>{
-        this.props.onDelete(result.data, "update");
+        this.props.onDelete(result.data.cart, "update");
+        document.getElementById("subtotal").innerHTML = result.data.valor;
       })
       .catch(function (e){
         console.error(e);
@@ -139,10 +141,10 @@ class List extends Component {
                       <p className="align_center">{ i.valor }</p>
                     </div>
                     <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.updateClick(event, i.ingrediente, i.quantidade, i.valor)} >update</FontIcon>
+                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.updateClick(event, i.ingrediente, i.quantidade, i.valor, i.unidade)} >update</FontIcon>
                     </div>
                     <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.ingrediente, i.quantidade, i.valor)} >delete</FontIcon>
+                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.ingrediente, i.quantidade, i.valor, i.unidade)} >delete</FontIcon>
                     </div>
                   </div>
                 </div>
@@ -162,6 +164,7 @@ class List extends Component {
                   Deseja remover o ingrediente abaixo?<br/><br/>
                   Ingrediente: {this.state.ingrediente}<br/>
                   Quantidade: {this.state.quantidade}<br/>
+                  Por Unidade: {this.state.unidade}<br/>
                   Valor: {this.state.valor}
                 </Modal.Body>
                 <Modal.Footer>
@@ -179,6 +182,7 @@ class List extends Component {
                   Deseja alterar os dados do ingrediente abaixo?<br/><br/>
                   Ingrediente: {this.state.ingrediente}<br/>
                   <TextField id="quantidade" floatingLabelText="Quantidade" value={this.state.quantidade} onChange={event => this.updateQuantidade(event)}/>
+                  <TextField id="unidade" floatingLabelText="Por Unidade" value={this.state.unidade} onChange={event => this.updateQuantidade(event)}/>
                   <TextField id="valor" floatingLabelText="Valor" value={this.state.valor} onChange={event => this.updateValor(event)}/>
                 </Modal.Body>
                 <Modal.Footer>
