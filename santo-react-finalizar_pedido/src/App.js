@@ -80,20 +80,27 @@ class List extends Component {
   }
 
   finishPedido(event){
-    var data = {};
-    axios.post("/finalizar_pedido/finish/", data)
-      .then((result) =>{
-        if (result.data === "success"){
-          window.location.href = "/novo_pedido/";
-        }
-        else {
-          this.close(event);
-          this.props.onDelete([], "failure");
-        }
-      })
-      .catch((e) => {
-          console.error(e);
-      })
+    if (document.getElementById("date_field").value !== ""){
+      var data = {data: document.getElementById("date_field").value};
+      axios.post("/finalizar_pedido/finish/", data)
+        .then((result) =>{
+          if (result.data === "success"){
+            window.location.href = "/pedidos/";
+          }
+          else {
+            this.close(event);
+            this.props.onDelete([], "failure");
+          }
+        })
+        .catch((e) => {
+            console.error(e);
+        })
+    }
+    else{
+      this.close(event);
+      this.props.onDelete([], "add");
+    }
+
   }
 
 
@@ -116,7 +123,7 @@ class List extends Component {
           ( this.props.displayType === "add" ?
           <div className="filtered">
             <div className="alert alert-danger" role="alert">
-              Selecione tipo, produto e quantidade
+              Selecione a data da entrega.
             </div>
           </div> :
           ( this.props.displayType === "update" ?
