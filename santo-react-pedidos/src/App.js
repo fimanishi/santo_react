@@ -8,7 +8,6 @@ import { Button } from 'react-bootstrap';
 import { Modal } from 'react-bootstrap';
 import "./Modal.css";
 import axios from 'axios';
-import TextField from 'material-ui/TextField';
 
 
 const iconStyles = {
@@ -28,71 +27,24 @@ class List extends Component {
     this.state = {showModalClient: false, showModal: false, nome: "", telefone: "", data: "", status: "", pagamento: ""};
   }
 
-  updateState (event){
-    if(event.target.id === "telefone"){
-      var re = /^[\d]+$/g;
-      var input = event.target.value.replace(/\D/g, "");
-      if(input.length === 10){
-        this.setState({[event.target.id]: "(" + input.slice(0,2) + ")" + input.slice(2,6) + "-" + input.slice(-4)});
-      }
-      else if(input.length === 11){
-        this.setState({[event.target.id]: "(" + input.slice(0,2) + ")" + input.slice(2,7) + "-" + input.slice(-4)});
-      }
-      else if(re.test(event.target.value)){
-        this.setState({[event.target.id]: event.target.value});
-      }
-      else if(event.target.value.length > 14){
-      }
-      else{
-        this.setState({[event.target.id]: ""});
-      }
-    }
-    else{
-      this.setState({[event.target.id]: event.target.value});
-    }
-  }
-
-  handleClick (event, id, nome, telefone, tipo, endereco, bairro, cidade, referencia, credito) {
-    this.setState({showModal: true, id: id, nome: nome, telefone: telefone, tipo: tipo, endereco: endereco, bairro: bairro, cidade: cidade, referencia: referencia, credito: credito});
+  handleClick (event, id, nome, data, status, pagamento) {
+    this.setState({showModal: true, id: id, nome: nome, data: data, status: status, pagamento: pagamento});
   }
 
   close(event) {
     this.setState({showModal: false, showModalClient: false});
   }
 
-  updateItem(event){
-    if (this.state.telefone.length === 0 || this.state.telefone.length === 13 || this.state.telefone.length === 14){
-      var data = {id: this.state.id, nome: this.state.nome, telefone: this.state.telefone, endereco: this.state.endereco, bairro: this.state.bairro, cidade: this.state.cidade}
-      axios.post("/cliente/update/", data)
-        .then((result) =>{
-          sessionStorage.setItem("client_id", this.state.id);
-          sessionStorage.setItem("client_name", this.state.nome);
-          this.close(event);
-          this.redirect();
-        })
-        .catch(function (e){
-          this.props.onUpdate([], "fail")
-        })
-      this.close(event);
-    }
-    else{
-      this.setState({telefone: ""});
-    }
-  }
-
-  checkClick(event, id, nome){
-    this.setState({showModalClient: true, id: id, nome: nome});
-    sessionStorage.setItem("client_id", id);
-    sessionStorage.setItem("client_name", nome)
-  }
-
-  selectItem(event){
-    this.close(event);
-    this.redirect();
-  }
-
-  addCliente(event){
-    window.location.href = "/adicionar_cliente/";
+  deleteItem(event){
+    var data = {id: this.state.id};
+    axios.post("/pedidos/filter/delete/", data)
+      .then((result)=>{
+        this.props.onDelete([], "delete");
+        this.close(event);
+      })
+      .catch((e)=>{
+        this.props.onDelete([], "fail")
+      })
   }
 
   redirect(){
@@ -129,7 +81,7 @@ class List extends Component {
                       <div className="listing_double">
                         <div className="listing">
                           <p><strong>Data:</strong></p>
-                          <p>{ i.data }</p>
+                          <p>{ i.data_output }</p>
                         </div>
                         <div className="listing">
                           <p><strong>Pagamento:</strong></p>
@@ -143,7 +95,7 @@ class List extends Component {
                           <FontIcon className="material-icons" color="#31708f" style={iconStyles2} onClick={event => this.updateClick(event, i.produto, i.quantidade)} >check_circle</FontIcon>
                         </div>
                         <div className="inline">
-                          <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.produto, i.quantidade)} >delete</FontIcon>
+                          <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.id, i.nome, i.data, i.status, i.pagamento)} >delete</FontIcon>
                         </div>
                       </div>
                     </div>
@@ -162,44 +114,34 @@ class List extends Component {
                 Insira pelo menos um filtro.
               </div>
             </div> :
+            ( this.props.displayType === "delete" ?
+            <div className="filtered">
+              <div className="alert alert-success" role="alert">
+                Pedido removido com sucesso.
+              </div>
+            </div> :
             ( this.props.displayType === "fail" ?
             <div className="filtered">
               <div className="alert alert-danger" role="alert">
                 Insira os dados corretamente.
               </div>
             </div> :
-              <p></p>)))}
+              <p></p>))))}
             <div>
               <Modal show={this.state.showModal} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>
-                  <Modal.Title>Atualizar Cliente</Modal.Title>
+                  <Modal.Title>Remover Pedido</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                  Deseja atualizar as informações do cliente abaixo?<br/><br/>
-                  <TextField id="nome" floatingLabelText="Nome" value={this.state.nome} onChange={event => this.updateState(event)}/>
-                  <TextField id="telefone" floatingLabelText="Telefone" value={this.state.telefone} onChange={event => this.updateState(event)}/>
-                  <TextField id="endereco" floatingLabelText="Endereço" value={this.state.endereco} onChange={event => this.updateState(event)}/>
-                  <TextField id="bairro" floatingLabelText="Bairro" value={this.state.bairro} onChange={event => this.updateState(event)}/>
-                  <TextField id="cidade" floatingLabelText="Cidade" value={this.state.cidade} onChange={event => this.updateState(event)}/>
+                  Deseja remover o pedido abaixo?<br/><br/>
+                  Nome: {this.state.nome}<br/>
+                  Data: {this.state.data_output}<br/>
+                  Entregue: {this.state.status}<br/>
+                  Pago: {this.state.pagamento}<br/>
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
-                  <Button className="btn-primary" onClick={event => this.updateItem(event)}>Sim</Button>
-                </Modal.Footer>
-              </Modal>
-            </div>
-            <div>
-              <Modal show={this.state.showModalClient} onHide={event => this.close(event)}>
-                <Modal.Header closeButton>
-                  <Modal.Title>Confirmar Cliente</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  Deseja selecionar o cliente abaixo?<br/><br/>
-                  Nome: {this.state.nome}
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
-                  <Button className="btn-primary" onClick={event => this.selectItem(event)}>Sim</Button>
+                  <Button className="btn-primary" onClick={event => this.deleteItem(event)}>Sim</Button>
                 </Modal.Footer>
               </Modal>
             </div>
@@ -218,7 +160,7 @@ function mapStateToProps (state) {
 
 function mapDispatchToProps (dispatch) {
   return {
-    onUpdate: function (data, displayType) {
+    onDelete: function (data, displayType) {
       dispatch(updateFiltered(data, displayType))
     }
   }
