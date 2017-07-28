@@ -35,24 +35,26 @@ const styles = {
 class List extends Component {
   constructor (props){
     super(props);
-    this.state = {showModal: false, showModalUpdate: false, showModalFinish: false, produto: "", quantidade: 0, valor_pago: "", checked: false};
-    this.setState({checked: props.info.boolean});
+    this.state = {showModal: false, showModalUpdate: false, showModalPedido: false, produto: "", quantidade: 0, valor_pago: "", checked: "", valor: 0, total: 0, id: 0};
   }
 
-  handleClick (event, produto, quantidade) {
-    this.setState({showModal: true, produto: produto, quantidade: quantidade});
+  handleClick (event, id, produto, quantidade, valor, total) {
+    this.setState({showModal: true, id: id, produto: produto, quantidade: quantidade, valor: valor, total: total});
   }
 
-  updateClick (event, produto, quantidade) {
-    this.setState({showModalUpdate: true, produto: produto, quantidade: quantidade});
+  updateClick (event, id, produto, quantidade, valor) {
+    this.setState({showModalUpdate: true, id: id, produto: produto, quantidade: quantidade, valor: valor});
   }
 
-  finishClick (event) {
-    this.setState({showModalFinish: true});
+  clickPedido (event) {
+    if (this.state.checked === ""){
+      this.setState({checked: this.props.info.boolean});
+    }
+    this.setState({showModalPedido: true});
   }
 
   close(event) {
-    this.setState({showModal: false, showModalUpdate: false, showModalFinish: false});
+    this.setState({showModal: false, showModalUpdate: false, showModalPedido: false});
   }
 
   checkStatus(event){
@@ -64,13 +66,15 @@ class List extends Component {
   }
 
   removeItem(event){
-    var data = {quantidade: this.state.quantidade, produto: this.state.produto}
-    axios.post("/novo_pedido/delete/", data)
+    var data = {id: this.state.id}
+    axios.post("/pedidos/detalhe/delete/", data)
       .then((result) =>{
-        this.props.onDelete(result.data.cart, "delete");
+        this.props.onUpdate(result.data.list, result.data.info, "delete");
+        document.getElementById("debito").innerHTML = result.data.info.debito;
+        document.getElementById("valor").innerHTML = result.data.info.valor;
       })
-      .catch(function (e){
-        console.error(e);
+      .catch((e) =>{
+        this.props.onUpdate(this.props.results, this.props.info, "fail");
       })
     this.close(event);
   }
@@ -82,56 +86,47 @@ class List extends Component {
     }
   }
 
-  updateItem(event){
-    var data = {quantidade: this.state.quantidade, produto: this.state.produto}
-    axios.post("/novo_pedido/update/", data)
+  updateQuantidade(event){
+    var re = /^[\d]*(,[\d]{0,3})?$/;
+    if (re.test(event.target.value)){
+      this.setState({quantidade: event.target.value});
+    }
+  }
+
+  updatePedido(event){
+    var debito;
+    if (this.state.valor_pago === ""){
+      debito = 0
+    }
+    else{
+      debito = this.state.valor_pago;
+    }
+    var data = {boolean: this.state.checked, debito: debito, id: this.props.info.id}
+    axios.post("/pedidos/detalhe/pedido/", data)
       .then((result) =>{
-        this.props.onDelete(result.data.cart, "update");
-        window.subTotal(result.data.total);
+        this.props.onUpdate(result.data.list, result.data.info, "update");
+        document.getElementById("debito").innerHTML = result.data.info.debito;
+        document.getElementById("entregue").innerHTML = result.data.info.status;
       })
       .catch(function (e){
         console.error(e);
       })
     this.close(event);
+    this.setState({valor_pago: ""})
   }
-
-  finishPedido(event){
-    if (document.getElementById("date_field").value !== ""){
-      var data = {data: document.getElementById("date_field").value};
-      axios.post("/finalizar_pedido/finish/", data)
-        .then((result) =>{
-          if (result.data === "success"){
-            window.location.href = "/pedidos/";
-          }
-          else {
-            this.close(event);
-            this.props.onDelete([], "failure");
-          }
-        })
-        .catch((e) => {
-            console.error(e);
-        })
-    }
-    else{
-      this.close(event);
-      this.props.onDelete([], "add");
-    }
-
-  }
-
 
   render() {
     return (
       <MuiThemeProvider>
         <div>
           <div className="align_center">
-            <Button className="btn-primary" style={widthButton} onClick={event => this.updateClick(event)}>Atualizar Pedido</Button>
+            <Button className="btn-primary" style={widthButton} onClick={event => this.clickPedido(event)}>Atualizar Pedido</Button>
             <br/>
           </div>
           { this.props.displayType === "fail" ?
           <div className="filtered">
             <div className="alert alert-danger" role="alert">
-              Produto não pode ser adicionado.
+              Ação não pôde ser concluída.
             </div>
           </div>:
           ( this.props.displayType === "delete" ?
@@ -149,13 +144,13 @@ class List extends Component {
           ( this.props.displayType === "update" ?
             <div className="filtered">
               <div className="alert alert-success" role="alert">
-                Produto atualizado com sucesso.
+                Pedido atualizado com sucesso.
               </div>
             </div>:
           ( this.props.displayType === "failure" ?
             <div className="filtered">
               <div className="alert alert-danger" role="alert">
-                Não há produto adicionado ao pedido.
+                Valor pago é maior do que o valor devido.
               </div>
             </div>:
           <p></p>))))}
@@ -189,10 +184,10 @@ class List extends Component {
                     <div className="listing_half">
                       <div>
                         <div className="inline">
-                          <FontIcon className="material-icons" color="#31708f" style={iconStyles2} onClick={event => this.updateClick(event, i.produto, i.quantidade)} >update</FontIcon>
+                          <FontIcon className="material-icons" color="#31708f" style={iconStyles2} onClick={event => this.updateClick(event, i.id, i.produto, i.quantidade, i.valor)} >update</FontIcon>
                         </div>
                         <div className="inline">
-                          <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.produto, i.quantidade)} >delete</FontIcon>
+                          <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.id, i.produto, i.quantidade, i.valor, i.total)} >delete</FontIcon>
                         </div>
                       </div>
                     </div>
@@ -209,6 +204,8 @@ class List extends Component {
                   Deseja remover o produto abaixo?<br/><br/>
                   Produto: {this.state.produto}<br/>
                   Quantidade: {this.state.quantidade}<br/>
+                  Valor: R${this.state.valor}<br/>
+                  Total: R${this.state.total}
 
                 </Modal.Body>
                 <Modal.Footer>
@@ -218,7 +215,7 @@ class List extends Component {
               </Modal>
             </div>
             <div>
-              <Modal show={this.state.showModalUpdate} onHide={event => this.close(event)}>
+              <Modal show={this.state.showModalPedido} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>
                   <Modal.Title>Atualizar Pedido</Modal.Title>
                 </Modal.Header>
@@ -228,21 +225,23 @@ class List extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
-                  <Button className="btn-primary" onClick={event => this.updateItem(event)}>Sim</Button>
+                  <Button className="btn-primary" onClick={event => this.updatePedido(event)}>Sim</Button>
                 </Modal.Footer>
               </Modal>
             </div>
             <div>
-              <Modal show={this.state.showModalFinish} onHide={event => this.close(event)}>
+              <Modal show={this.state.showModalUpdate} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>
-                  <Modal.Title>Finalizar Pedido</Modal.Title>
+                  <Modal.Title>Alterar Pedido</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                  Deseja finalizar o pedido?
+                  Deseja alterar o pedido abaixo?<br/><br/>
+                  Produto: {this.state.produto}
+                  <TextField id="quantidade" floatingLabelText="Quantidade" value={this.state.quantidade} onChange={event => this.updateQuantidade(event)}/>
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
-                  <Button className="btn-primary" onClick={event => this.finishPedido(event)}>Sim</Button>
+                  <Button className="btn-primary" onClick={event => this.updateItem(event)}>Sim</Button>
                 </Modal.Footer>
               </Modal>
             </div>
@@ -262,8 +261,8 @@ function mapStateToProps (state) {
 
 function mapDispatchToProps (dispatch) {
   return {
-    onDelete: function (data, displayType) {
-      dispatch(updateFiltered(data, displayType))
+    onUpdate: function (data, info, displayType) {
+      dispatch(updateFiltered(data, info, displayType))
     }
   }
 }

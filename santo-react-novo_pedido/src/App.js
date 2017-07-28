@@ -128,6 +128,8 @@ class List extends Component {
             </div>):<p></p>}
             <div className="align_center">
               <Button className="btn-primary" style={widthButton} onClick={event => this.finishClick(event)}>Finalizar Pedido</Button>
+              <br/>
+              <br/>
             </div>
             <div>
               <Modal show={this.state.showModal} onHide={event => this.close(event)}>
