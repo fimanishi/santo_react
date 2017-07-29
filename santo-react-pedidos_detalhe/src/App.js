@@ -42,8 +42,8 @@ class List extends Component {
     this.setState({showModal: true, id: id, produto: produto, quantidade: quantidade, valor: valor, total: total});
   }
 
-  updateClick (event, id, produto, quantidade, valor) {
-    this.setState({showModalUpdate: true, id: id, produto: produto, quantidade: quantidade, valor: valor});
+  updateClick (event, id, produto, quantidade, valor, total) {
+    this.setState({showModalUpdate: true, id: id, produto: produto, quantidade: quantidade, valor: valor, total: total});
   }
 
   clickPedido (event) {
@@ -70,6 +70,20 @@ class List extends Component {
     axios.post("/pedidos/detalhe/delete/", data)
       .then((result) =>{
         this.props.onUpdate(result.data.list, result.data.info, "delete");
+        document.getElementById("debito").innerHTML = result.data.info.debito;
+        document.getElementById("valor").innerHTML = result.data.info.valor;
+      })
+      .catch((e) =>{
+        this.props.onUpdate(this.props.results, this.props.info, "fail");
+      })
+    this.close(event);
+  }
+
+  updateItem(event){
+    var data = {id: this.state.id, quantidade: this.state.quantidade, valor: this.state.valor, total: this.state.total}
+    axios.post("/pedidos/detalhe/update/", data)
+      .then((result) =>{
+        this.props.onUpdate(result.data.list, result.data.info, result.data.message);
         document.getElementById("debito").innerHTML = result.data.info.debito;
         document.getElementById("valor").innerHTML = result.data.info.valor;
       })
@@ -135,12 +149,6 @@ class List extends Component {
                 Produto removido com sucesso.
               </div>
             </div>:
-          ( this.props.displayType === "add" ?
-          <div className="filtered">
-            <div className="alert alert-danger" role="alert">
-              Selecione a data da entrega.
-            </div>
-          </div> :
           ( this.props.displayType === "update" ?
             <div className="filtered">
               <div className="alert alert-success" role="alert">
@@ -150,10 +158,10 @@ class List extends Component {
           ( this.props.displayType === "failure" ?
             <div className="filtered">
               <div className="alert alert-danger" role="alert">
-                Valor pago é maior do que o valor devido.
+                Quantidade deve ser um número maior que zero.
               </div>
             </div>:
-          <p></p>))))}
+          <p></p>)))}
           { this.props.results.length >= 0 ? this.props.results.map((i) =>
             <div key={i.id}>
               <div className="filtered">
@@ -184,7 +192,7 @@ class List extends Component {
                     <div className="listing_half">
                       <div>
                         <div className="inline">
-                          <FontIcon className="material-icons" color="#31708f" style={iconStyles2} onClick={event => this.updateClick(event, i.id, i.produto, i.quantidade, i.valor)} >update</FontIcon>
+                          <FontIcon className="material-icons" color="#31708f" style={iconStyles2} onClick={event => this.updateClick(event, i.id, i.produto, i.quantidade, i.valor, i.total)} >update</FontIcon>
                         </div>
                         <div className="inline">
                           <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.id, i.produto, i.quantidade, i.valor, i.total)} >delete</FontIcon>
