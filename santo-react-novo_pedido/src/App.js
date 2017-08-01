@@ -126,11 +126,13 @@ class List extends Component {
                 </div>
               </div>
             </div>):<p></p>}
+            { this.props.results.length > 0 ?
             <div className="align_center">
               <Button className="btn-primary" style={widthButton} onClick={event => this.finishClick(event)}>Finalizar Pedido</Button>
               <br/>
               <br/>
-            </div>
+            </div>:
+            <p></p>}
             <div>
               <Modal show={this.state.showModal} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>

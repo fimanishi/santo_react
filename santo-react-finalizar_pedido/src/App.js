@@ -52,6 +52,7 @@ class List extends Component {
     axios.post("/novo_pedido/delete/", data)
       .then((result) =>{
         this.props.onDelete(result.data.cart, "delete");
+        window.subTotal(result.data.total);
       })
       .catch(function (e){
         console.error(e);

@@ -24,15 +24,23 @@ const iconStyles2 = {
 class List extends Component {
   constructor (props){
     super(props);
-    this.state = {showModalClient: false, showModal: false, nome: "", telefone: "", data: "", status: "", pagamento: ""};
+    this.state = {showModalUpdate: false, showModal: false, nome: "", telefone: "", data: "", status: "", pagamento: ""};
   }
 
   handleClick (event, id, nome, data, status, pagamento) {
     this.setState({showModal: true, id: id, nome: nome, data: data, status: status, pagamento: pagamento});
   }
 
+  updateClick (event, id, nome, data, status, pagamento) {
+    this.setState({showModalUpdate: true, id: id, nome: nome, data: data, status: status, pagamento: pagamento});
+  }
+
+  doneClick (event, id, nome, data, status, pagamento) {
+    this.setState({showModalDone: true, id: id, nome: nome, data: data, status: status, pagamento: pagamento});
+  }
+
   close(event) {
-    this.setState({showModal: false, showModalClient: false});
+    this.setState({showModal: false, showModalUpdate: false, showModalDone: false});
   }
 
   deleteItem(event){
@@ -47,15 +55,20 @@ class List extends Component {
       })
   }
 
-  redirect(){
-    var data = {user_id: this.state.id}
-    axios.post("/cart_user/", data)
-      .then((result) => {
-        window.location.href = "/novo_pedido/";
+  doneItem(event){
+    var data = {id: this.state.id};
+    axios.post("/pedidos/filter/done/", data)
+      .then((result)=>{
+        this.props.onDelete([], "success");
+        this.close(event);
       })
-      .catch((e) =>{
-        this.props.onUpdate([], "fail");
+      .catch((e)=>{
+        this.props.onDelete([], "fail")
       })
+  }
+
+  updateItem(event){
+    window.location.href = "/pedidos/detalhe/" + this.state.id + "/";
   }
 
   render() {
@@ -92,10 +105,13 @@ class List extends Component {
                     <div className="listing_half">
                       <div>
                         <div className="inline">
-                          <FontIcon className="material-icons" color="#31708f" style={iconStyles2} onClick={event => this.updateClick(event, i.produto, i.quantidade)} >check_circle</FontIcon>
+                          <FontIcon className="material-icons" color="#31708f" style={iconStyles2} onClick={event => this.updateClick(event, i.id, i.nome, i.data_output, i.status, i.pagamento)} >check_circle</FontIcon>
                         </div>
                         <div className="inline">
-                          <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.id, i.nome, i.data, i.status, i.pagamento)} >delete</FontIcon>
+                          <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.id, i.nome, i.data_output, i.status, i.pagamento)} >delete</FontIcon>
+                        </div>
+                        <div className="inline">
+                          <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.doneClick(event, i.id, i.nome, i.data_output, i.status, i.pagamento)} >done</FontIcon>
                         </div>
                       </div>
                     </div>
@@ -126,7 +142,13 @@ class List extends Component {
                 Insira os dados corretamente.
               </div>
             </div> :
-              <p></p>))))}
+            ( this.props.displayType === "success" ?
+            <div className="filtered">
+              <div className="alert alert-success" role="alert">
+                Pedido dado baixa com sucesso.
+              </div>
+            </div> :
+              <p></p>)))))}
             <div>
               <Modal show={this.state.showModal} onHide={event => this.close(event)}>
                 <Modal.Header closeButton>
@@ -135,13 +157,49 @@ class List extends Component {
                 <Modal.Body>
                   Deseja remover o pedido abaixo?<br/><br/>
                   Nome: {this.state.nome}<br/>
-                  Data: {this.state.data_output}<br/>
+                  Data: {this.state.data}<br/>
                   Entregue: {this.state.status}<br/>
                   Pago: {this.state.pagamento}<br/>
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
                   <Button className="btn-primary" onClick={event => this.deleteItem(event)}>Sim</Button>
+                </Modal.Footer>
+              </Modal>
+            </div>
+            <div>
+              <Modal show={this.state.showModalDone} onHide={event => this.close(event)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Dar baixa no pedido</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  O pedido abaixo foi pago e entregue?<br/><br/>
+                  Nome: {this.state.nome}<br/>
+                  Data: {this.state.data}<br/>
+                  Entregue: {this.state.status}<br/>
+                  Pago: {this.state.pagamento}<br/>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
+                  <Button className="btn-primary" onClick={event => this.doneItem(event)}>Sim</Button>
+                </Modal.Footer>
+              </Modal>
+            </div>
+            <div>
+              <Modal show={this.state.showModalUpdate} onHide={event => this.close(event)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Visualizar Pedido</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  Deseja visualizar o pedido abaixo?<br/><br/>
+                  Nome: {this.state.nome}<br/>
+                  Data: {this.state.data}<br/>
+                  Entregue: {this.state.status}<br/>
+                  Pago: {this.state.pagamento}<br/>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
+                  <Button className="btn-primary" onClick={event => this.updateItem(event)}>Sim</Button>
                 </Modal.Footer>
               </Modal>
             </div>

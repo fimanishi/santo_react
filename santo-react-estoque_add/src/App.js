@@ -43,7 +43,7 @@ class List extends Component {
   }
 
   removeItem(event){
-    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente, unidade: this.state.unidade}
+    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente, por_unidade: this.state.unidade}
     axios.post("/estoque/add/delete/", data)
       .then((result) =>{
         this.props.onDelete(result.data.cart, "delete");
@@ -70,7 +70,7 @@ class List extends Component {
   }
 
   updateItem(event){
-    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente, valor: this.state.valor, unidade: this.state.unidade}
+    var data = {quantidade: this.state.quantidade, ingrediente: this.state.ingrediente, valor: this.state.valor, por_unidade: this.state.unidade}
     axios.post("/estoque/add/update/", data)
       .then((result) =>{
         this.props.onDelete(result.data.cart, "update");
@@ -137,8 +137,8 @@ class List extends Component {
                       <p className="align_center">{ i.quantidade }</p>
                     </div>
                     <div className="listing_half">
-                      <p className="align_center"><strong>Valor:</strong></p>
-                      <p className="align_center">{ i.valor }</p>
+                      <p className="align_center"><strong>Total:</strong></p>
+                      <p className="align_center">R${ i.total }</p>
                     </div>
                     <div className="listing_half">
                       <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.updateClick(event, i.ingrediente, i.quantidade, i.valor, i.unidade)} >update</FontIcon>
@@ -183,7 +183,7 @@ class List extends Component {
                   Ingrediente: {this.state.ingrediente}<br/>
                   <TextField id="quantidade" floatingLabelText="Quantidade" value={this.state.quantidade} onChange={event => this.updateQuantidade(event)}/>
                   <TextField id="unidade" floatingLabelText="Por Unidade" value={this.state.unidade} onChange={event => this.updateQuantidade(event)}/>
-                  <TextField id="valor" floatingLabelText="Valor" value={this.state.valor} onChange={event => this.updateValor(event)}/>
+                  <TextField id="valor" floatingLabelText="Valor por Unidade" value={this.state.valor} onChange={event => this.updateValor(event)}/>
                 </Modal.Body>
                 <Modal.Footer>
                   <Button className="btn-danger" onClick={event => this.close(event)}>Não</Button>
