@@ -141,10 +141,10 @@ class List extends Component {
                       <p className="align_center">R${ i.total }</p>
                     </div>
                     <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.updateClick(event, i.ingrediente, i.quantidade, i.valor, i.unidade)} >update</FontIcon>
+                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.updateClick(event, i.ingrediente, i.quantidade, i.valor, i.por_unidade)} >update</FontIcon>
                     </div>
                     <div className="listing_half">
-                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.ingrediente, i.quantidade, i.valor, i.unidade)} >delete</FontIcon>
+                      <FontIcon className="material-icons" color="#31708f" style={iconStyles} onClick={event => this.handleClick(event, i.ingrediente, i.quantidade, i.valor, i.por_unidade)} >delete</FontIcon>
                     </div>
                   </div>
                 </div>
